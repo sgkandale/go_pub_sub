@@ -102,6 +102,11 @@ func (s *GrpcServer) Subscribe(in *pubsubPB.SubscribeRequest, stream pubsubPB.Pu
 		var err error
 		// read messages from channel
 		for msg := range s.pubsubChan {
+			// exit if stream in cancelled
+			if stream.Context().Err() != nil {
+				log.Printf("[ERROR] client stream in grpc : %s", err.Error())
+				return
+			}
 			// send message to client
 			err = stream.Send(
 				&pubsubPB.SubscribeResponse{
@@ -110,12 +115,17 @@ func (s *GrpcServer) Subscribe(in *pubsubPB.SubscribeRequest, stream pubsubPB.Pu
 			)
 			if err != nil {
 				log.Printf("[ERROR] sending message to subscribed client : %s", err.Error())
-				return
+				if err == context.Canceled {
+					return
+				}
 			}
 		}
 	}()
 
-	ctxDone := stream.Context().Done()
-	<-ctxDone
+	<-stream.Context().Done()
+	err := stream.Context().Err()
+	if err != nil && err != context.Canceled {
+		return err
+	}
 	return nil
 }
