@@ -8,4 +8,5 @@ import (
 var (
 	ErrInvalidRequest = status.Errorf(codes.FailedPrecondition, "invalid request")
 	ErrNoMsgBody      = status.Errorf(codes.InvalidArgument, "no message body")
+	ErrNoTopic        = status.Errorf(codes.InvalidArgument, "no topic specified")
 )

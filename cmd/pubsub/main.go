@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"pubsub/config"
+	"pubsub/pkg/pubsub"
 	"pubsub/server"
 )
 
@@ -25,23 +26,34 @@ func main() {
 	globalWaitgroup := sync.WaitGroup{}
 	activeServerCount := 0
 
+	// pubsub
+	pubsubHub := pubsub.New()
+
 	if cfg.GrcpConfig.Use {
-		grpcServer := server.NewGrpc(globalCtx, &cfg.GrcpConfig)
-		globalWaitgroup.Add(1)
-		go func() {
-			defer globalWaitgroup.Done()
-			activeServerCount++
-			err := grpcServer.Serve()
-			activeServerCount--
-			if err != nil {
-				cancelGlobalCtx()
-				log.Printf("[ERROR] starting grpc server : %s", err.Error())
-			}
-		}()
-		go func() {
-			<-globalCtx.Done()
-			grpcServer.Stop()
-		}()
+		grpcServer := server.NewGrpc(
+			globalCtx,
+			&server.NewServerRequest{
+				Cfg:    &cfg.GrcpConfig,
+				PubSub: pubsubHub,
+			},
+		)
+		if grpcServer != nil {
+			globalWaitgroup.Add(1)
+			go func() {
+				defer globalWaitgroup.Done()
+				activeServerCount++
+				err := grpcServer.Serve()
+				activeServerCount--
+				if err != nil {
+					cancelGlobalCtx()
+					log.Printf("[ERROR] starting grpc server : %s", err.Error())
+				}
+			}()
+			go func() {
+				<-globalCtx.Done()
+				grpcServer.Stop()
+			}()
+		}
 	}
 
 	// monitor active server count
