@@ -1,0 +1,2 @@
+use_grpc: true
+grpc_port: 8080

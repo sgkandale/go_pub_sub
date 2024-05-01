@@ -1,0 +1,37 @@
+syntax="proto3";
+import "google/protobuf/timestamp.proto";
+
+package pubsub;
+
+option go_package = "./pubsubPB";
+
+message Message {
+    string uuid = 1;
+    google.protobuf.Timestamp timestamp = 2;
+    bytes body = 3;
+}
+
+message PublishRequest {
+    Message message = 1;
+}
+
+message PublishResponse {
+    string uuid = 1;
+}
+
+message SubscribeRequest {
+    string message = 1;
+}
+
+message SubscribeResponse {
+    Message message = 1;
+}
+
+service PubSubServer {
+    rpc Publish (PublishRequest) returns (PublishResponse);
+
+    rpc Subscribe (SubscribeRequest) returns (stream SubscribeResponse);
+}
+
+// export PATH="$PATH:$(go env GOPATH)/bin"
+// protoc --go_out="pkg" --go-grpc_out="pkg" pubsub.proto
