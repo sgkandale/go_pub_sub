@@ -1,0 +1,24 @@
+# ignore all files without extension
+*
+!*/
+!*.*
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# log files
+*.log
+
+# output files
+*.json
+*.csv
+*.pdf
+*.zip
+*.xlsx
