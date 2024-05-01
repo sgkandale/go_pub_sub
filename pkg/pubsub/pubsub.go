@@ -32,7 +32,7 @@ func New() *PubSub {
 }
 
 // Publish sends the message to the topic and all of its subscribers.
-func (p *PubSub) Publish(topic string, msg *Message) error {
+func (p *PubSub) Publish(topic string, msg *Message) {
 	topicListener, exist := p.topics[topic]
 	if !exist {
 		topicListener = NewTopicListener(topic)
@@ -41,7 +41,6 @@ func (p *PubSub) Publish(topic string, msg *Message) error {
 		p.mutex.Unlock()
 	}
 	topicListener.Send(msg)
-	return nil
 }
 
 // Subscribe creates a new subscriber for the topic.
