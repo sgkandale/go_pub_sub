@@ -13,8 +13,6 @@ import (
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -76,9 +74,9 @@ func (s *GrpcServer) Publish(ctx context.Context, in *pubsubPB.PublishRequest) (
 	if in.Message == nil {
 		return nil, errors.ErrInvalidRequest
 	}
-	if len(in.Message.Body) == 0 {
-		return nil, errors.ErrNoMsgBody
-	}
+	// if len(in.Message.Body) == 0 {
+	// 	return nil, errors.ErrNoMsgBody
+	// }
 
 	msgUuid := uuid.NewString()
 	in.Message.Uuid = msgUuid
@@ -86,6 +84,7 @@ func (s *GrpcServer) Publish(ctx context.Context, in *pubsubPB.PublishRequest) (
 
 	// push message in channel
 	s.pubsubChan <- in.Message
+	log.Print("pushing in channel")
 
 	// return response
 	return &pubsubPB.PublishResponse{
@@ -94,24 +93,29 @@ func (s *GrpcServer) Publish(ctx context.Context, in *pubsubPB.PublishRequest) (
 }
 
 func (s *GrpcServer) Subscribe(in *pubsubPB.SubscribeRequest, stream pubsubPB.PubSubServer_SubscribeServer) error {
-	log.Print("subscribe")
 	// validations
 	if in == nil {
 		return errors.ErrInvalidRequest
 	}
-	var err error
 
-	// read messages from channel
-	for msg := range s.pubsubChan {
-		// send message to client
-		err = stream.Send(
-			&pubsubPB.SubscribeResponse{
-				Message: msg,
-			},
-		)
-		if err != nil {
-			return status.Errorf(codes.Internal, "writing response to stream")
+	go func() {
+		var err error
+		// read messages from channel
+		for msg := range s.pubsubChan {
+			// send message to client
+			err = stream.Send(
+				&pubsubPB.SubscribeResponse{
+					Message: msg,
+				},
+			)
+			if err != nil {
+				log.Printf("[ERROR] sending message to subscribed client : %s", err.Error())
+				return
+			}
 		}
-	}
+	}()
+
+	ctxDone := stream.Context().Done()
+	<-ctxDone
 	return nil
 }
