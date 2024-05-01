@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"pubsub/pkg/pubsub"
 
@@ -136,6 +137,7 @@ func (s *WebsocketServer) PubSubHandler(w http.ResponseWriter, r *http.Request) 
 				log.Printf("[ERROR] publisher client type, but no body specified in message")
 				continue
 			}
+			newMsg.Timestamp = time.Now().UTC()
 			s.pubsub.Publish(newMsg.Topic, &newMsg)
 		}
 	} else if strings.EqualFold(initReq.ClientType, "subscriber") {

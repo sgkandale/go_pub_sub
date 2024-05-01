@@ -28,7 +28,6 @@ type TopicListener struct {
 // NewTopicListener creates new topic listener with all fields initialised.
 // This will also call listen method which listens for incoming messages.
 func NewTopicListener(topic string) *TopicListener {
-	log.Print("NewTopicListener")
 	newTopicListener := &TopicListener{
 		topic:       topic,
 		msgChannel:  make(chan *Message, PubsubChannelSize),
