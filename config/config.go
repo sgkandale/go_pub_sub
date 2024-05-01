@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	GrcpConfig ServerConfig
+	GrcpConfig      ServerConfig
+	WebsocketConfig ServerConfig
 }
 
 type ServerConfig struct {
@@ -16,8 +17,13 @@ type ServerConfig struct {
 }
 
 type FileConfig struct {
+	// grpc config
 	UseGrpc  bool `yaml:"use_grpc" env:"use_grpc"`
 	GrpcPort int  `yaml:"grpc_port" env:"grpc_port"`
+
+	// websocket config
+	UseWebsocket  bool `yaml:"use_websocket" env:"use_websocket"`
+	WebsocketPort int  `yaml:"websocket_port" env:"websocket_port"`
 }
 
 func Read(fileName string) *Config {
@@ -45,6 +51,17 @@ func Read(fileName string) *Config {
 		}
 	} else {
 		log.Print("[INFO] grpc server is not enabled in config")
+	}
+
+	// if websocket is enabled
+	if cfg.UseWebsocket {
+		log.Print("[INFO] websocket server is enabled in config")
+		respCfg.WebsocketConfig = ServerConfig{
+			Use:  true,
+			Port: cfg.WebsocketPort,
+		}
+	} else {
+		log.Print("[INFO] websocket server is not enabled in config")
 	}
 
 	return respCfg

@@ -1,2 +1,5 @@
 use_grpc: true
 grpc_port: 8080
+
+use_websocket: true
+websocket_port: 8080

@@ -29,6 +29,7 @@ func main() {
 	// pubsub
 	pubsubHub := pubsub.New()
 
+	// start grpc server
 	if cfg.GrcpConfig.Use {
 		grpcServer := server.NewGrpc(
 			globalCtx,
@@ -52,6 +53,34 @@ func main() {
 			go func() {
 				<-globalCtx.Done()
 				grpcServer.Stop()
+			}()
+		}
+	}
+
+	// start websocket server
+	if cfg.WebsocketConfig.Use {
+		websocketServer := server.NewWebsocket(
+			globalCtx,
+			&server.NewServerRequest{
+				Cfg:    &cfg.WebsocketConfig,
+				PubSub: pubsubHub,
+			},
+		)
+		if websocketServer != nil {
+			globalWaitgroup.Add(1)
+			go func() {
+				defer globalWaitgroup.Done()
+				activeServerCount++
+				err := websocketServer.Serve()
+				activeServerCount--
+				if err != nil {
+					cancelGlobalCtx()
+					log.Printf("[ERROR] starting websocket server : %s", err.Error())
+				}
+			}()
+			go func() {
+				<-globalCtx.Done()
+				websocketServer.Stop()
 			}()
 		}
 	}

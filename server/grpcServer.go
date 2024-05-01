@@ -122,7 +122,7 @@ func (s *GrpcServer) Subscribe(in *pubsubPB.SubscribeRequest, stream pubsubPB.Pu
 	// register subscriber in pubsub
 	subscriber := s.pubsub.Subscribe(in.Topic)
 	defer s.pubsub.Unsubscribe(subscriber)
-	log.Printf("[INFO] new subscriber connected for topic : '%s'", in.Topic)
+	log.Printf("[INFO] new subscriber connected in grpc for topic : '%s'", in.Topic)
 
 	go func() {
 		var err error
