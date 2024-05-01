@@ -26,6 +26,7 @@ type GrpcServer struct {
 	pubsub     *pubsub.PubSub
 }
 
+// NewGrpc creats a new grpc server instance
 func NewGrpc(ctx context.Context, req *NewServerRequest) *GrpcServer {
 	if req == nil {
 		log.Printf("[ERROR] nil request to create grpc server")
@@ -59,6 +60,7 @@ func NewGrpc(ctx context.Context, req *NewServerRequest) *GrpcServer {
 	return pubsubServer
 }
 
+// Serve starts the grpc server
 func (s *GrpcServer) Serve() error {
 	if s.listener == nil {
 		return fmt.Errorf("grpc listener not registered")
@@ -71,6 +73,7 @@ func (s *GrpcServer) Serve() error {
 	return nil
 }
 
+// Stop will attempt to stop the grpc server
 func (s *GrpcServer) Stop() {
 	if s.grpcServer != nil {
 		log.Printf("[WARN] stopping grpc server on port %d", s.port)

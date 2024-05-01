@@ -16,6 +16,7 @@ type Message struct {
 	Tags      map[string]string `json:"tags"`
 }
 
+// NewMessageFromPB creates a new Message from a protobuf message
 func NewMessageFromPB(pb *pubsubPB.Message) *Message {
 	if pb == nil {
 		return nil
@@ -29,6 +30,7 @@ func NewMessageFromPB(pb *pubsubPB.Message) *Message {
 	}
 }
 
+// MessageToPB converts a Message to a protobuf message
 func MessageToPB(msg *Message) *pubsubPB.Message {
 	if msg == nil {
 		return nil
